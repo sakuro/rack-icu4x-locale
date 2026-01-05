@@ -1,0 +1,10 @@
+module Rack
+  module Icu4x
+    module Locale
+      VERSION: String
+
+      class Error < StandardError
+      end
+    end
+  end
+end
