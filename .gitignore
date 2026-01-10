@@ -30,6 +30,9 @@
 /examples/vendor/
 /examples/Gemfile.lock
 
+# Environment
+/.env
+
 # MCP
 /.mcp.json
 ## Ignore serena stuff except project.yml
