@@ -201,6 +201,14 @@ RSpec.describe Rack::ICU4X::Locale do
         expect(locales[0].to_s).to eq("en")
       end
     end
+
+    context "when default is not in from" do
+      it "raises an error" do
+        expect {
+          Rack::ICU4X::Locale.new(app, from:, default: "fr")
+        }.to raise_error(Rack::ICU4X::Locale::Error, /default "fr" is not in available locales/)
+      end
+    end
   end
 
   describe "ENV_KEY" do

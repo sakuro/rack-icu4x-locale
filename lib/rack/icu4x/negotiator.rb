@@ -8,10 +8,11 @@ module Rack
     # to avoid politically sensitive fallbacks (e.g., zh-TW won't match zh-CN).
     #
     # @example
-    #   negotiator = Rack::ICU4X::Negotiator.new(%w[en-US en-GB ja])
+    #   locales = %w[en-US en-GB ja].map { ICU4X::Locale.parse(_1) }
+    #   negotiator = Rack::ICU4X::Negotiator.new(locales)
     #   negotiator.negotiate(%w[en-AU ja-JP])  # => ["en-US", "ja"]
     class Negotiator
-      # @param available_locales [Array<String, ICU4X::Locale>] List of available locales
+      # @param available_locales [Array<ICU4X::Locale>] List of available locales
       def initialize(available_locales)
         @available = build_available_index(available_locales)
       end
@@ -46,8 +47,7 @@ module Rack
       end
 
       private def build_available_index(locales)
-        locales.map do |locale_or_str|
-          locale = locale_or_str.is_a?(::ICU4X::Locale) ? locale_or_str : ::ICU4X::Locale.parse(locale_or_str)
+        locales.map do |locale|
           maximized = locale.maximize
           {
             original: locale.to_s,
