@@ -17,7 +17,7 @@ gem 'rack-icu4x-locale'
 
 ```ruby
 use Rack::ICU4X::Locale,
-  available_locales: %w[en ja de fr],
+  from: %w[en ja de fr],
   cookie: "locale",           # optional: cookie name for locale override
   default: "en"               # optional: fallback locale when no match
 
