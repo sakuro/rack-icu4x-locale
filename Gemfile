@@ -9,6 +9,9 @@ group :development, :test do
 
   gem "irb", require: false
   gem "repl_type_completor", require: false
+
+  # Data for i18n
+  gem "icu4x-data-recommended", require: false
 end
 
 group :development do
