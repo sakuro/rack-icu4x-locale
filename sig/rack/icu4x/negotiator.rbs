@@ -3,6 +3,8 @@ module Rack
     class Negotiator
       STRATEGIES: Array[Symbol]
 
+      type locale_input = String | ICU4X::Locale
+
       type available_entry = {
         original: String,
         locale: ICU4X::Locale,
@@ -17,7 +19,7 @@ module Rack
       @available: Array[available_entry]
 
       def initialize: (
-        Array[String] available_locales,
+        Array[locale_input] available_locales,
         ?strategy: Symbol,
         ?default_locale: String?
       ) -> void
@@ -28,7 +30,7 @@ module Rack
 
       def validate_strategy!: (Symbol strategy) -> void
       def validate_default_locale!: (Symbol strategy, String? default_locale) -> void
-      def build_available_index: (Array[String] locales) -> Array[available_entry]
+      def build_available_index: (Array[locale_input] locales) -> Array[available_entry]
       def filter_matches: (Array[String] requested_locales) -> Array[String]
       def match_best: (Array[String] requested_locales) -> Array[String]
       def lookup_single: (Array[String] requested_locales) -> Array[String]
