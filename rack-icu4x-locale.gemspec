@@ -4,7 +4,7 @@ require_relative "lib/rack/icu4x/locale/version"
 
 Gem::Specification.new do |spec|
   spec.name = "rack-icu4x-locale"
-  spec.version = Rack::Icu4x::Locale::VERSION
+  spec.version = Rack::ICU4X::Locale::VERSION
   spec.authors = ["OZAWA Sakuro"]
   spec.email = ["10973+sakuro@users.noreply.github.com"]
 
@@ -33,5 +33,7 @@ Gem::Specification.new do |spec|
   spec.executables = spec.files.grep(%r{\Aexe/}) {|f| File.basename(f) }
   spec.require_paths = ["lib"]
 
+  spec.add_dependency "icu4x", "~> 0.8"
+  spec.add_dependency "rack", ">= 2.0"
   spec.add_dependency "zeitwerk", "~> 2.7"
 end
