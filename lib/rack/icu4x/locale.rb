@@ -14,10 +14,10 @@ module Rack
     # script boundaries (e.g., zh-TW/Hant will NOT match zh-CN/Hans).
     #
     # @example Basic usage
-    #   use Rack::ICU4X::Locale, available_locales: %w[en ja]
+    #   use Rack::ICU4X::Locale, from: %w[en ja]
     #
     # @example With cookie support
-    #   use Rack::ICU4X::Locale, available_locales: %w[en ja], cookie: "locale"
+    #   use Rack::ICU4X::Locale, from: %w[en ja], cookie: "locale"
     class Locale
       ENV_KEY = "rack.icu4x.locale"
       public_constant :ENV_KEY
@@ -25,15 +25,15 @@ module Rack
       class Error < StandardError; end
 
       # @param app [#call] The Rack application
-      # @param available_locales [Array<String, ICU4X::Locale>] List of available locales
+      # @param from [Array<String, ICU4X::Locale>] List of available locales
       # @param cookie [String, nil] Cookie name for locale preference (optional)
       # @param default [String, ICU4X::Locale, nil] Default locale when no match is found (optional)
-      def initialize(app, available_locales:, cookie: nil, default: nil)
+      def initialize(app, from:, cookie: nil, default: nil)
         @app = app
-        @available_locales = available_locales
+        @from = from
         @cookie_name = cookie
         @default = default && normalize_locale(default)
-        @negotiator = Negotiator.new(available_locales)
+        @negotiator = Negotiator.new(from)
       end
 
       # @param env [Hash] Rack environment

@@ -16,16 +16,16 @@ Rack middleware that generates an array of ICU4X::Locale instances (in preferenc
 
 ```ruby
 use Rack::ICU4X::Locale,
-  available_locales: %w[en-US en-GB ja],  # Required: available locales
-  cookie: "locale",                        # Optional: cookie name
-  default: "en"                            # Optional: fallback locale
+  from: %w[en-US en-GB ja],  # Required: available locales
+  cookie: "locale",          # Optional: cookie name
+  default: "en"              # Optional: fallback locale
 ```
 
 ### Options
 
 | Option | Required | Default | Description |
 |--------|----------|---------|-------------|
-| `available_locales` | Yes | - | Array of available locale identifiers (String or ICU4X::Locale) |
+| `from` | Yes | - | Array of available locale identifiers (String or ICU4X::Locale) |
 | `cookie` | No | nil | Cookie name for locale override |
 | `default` | No | nil | Fallback locale when no match is found (String or ICU4X::Locale) |
 
