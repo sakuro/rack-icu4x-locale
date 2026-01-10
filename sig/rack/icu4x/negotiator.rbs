@@ -1,0 +1,40 @@
+module Rack
+  module ICU4X
+    class Negotiator
+      STRATEGIES: Array[Symbol]
+
+      type available_entry = {
+        original: String,
+        locale: ICU4X::Locale,
+        maximized: ICU4X::Locale,
+        language: String,
+        script: String,
+        region: String
+      }
+
+      @strategy: Symbol
+      @default_locale: String?
+      @available: Array[available_entry]
+
+      def initialize: (
+        Array[String] available_locales,
+        ?strategy: Symbol,
+        ?default_locale: String?
+      ) -> void
+
+      def negotiate: (Array[String] requested_locales) -> Array[String]
+
+      private
+
+      def validate_strategy!: (Symbol strategy) -> void
+      def validate_default_locale!: (Symbol strategy, String? default_locale) -> void
+      def build_available_index: (Array[String] locales) -> Array[available_entry]
+      def filter_matches: (Array[String] requested_locales) -> Array[String]
+      def match_best: (Array[String] requested_locales) -> Array[String]
+      def lookup_single: (Array[String] requested_locales) -> Array[String]
+      def maximize_locale: (String locale_str) -> ICU4X::Locale
+      def find_exact_match: (Array[available_entry] candidates, ICU4X::Locale req_max) -> available_entry?
+      def find_lang_script_match: (Array[available_entry] candidates, ICU4X::Locale req_max) -> available_entry?
+    end
+  end
+end

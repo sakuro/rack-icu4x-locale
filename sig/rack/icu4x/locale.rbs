@@ -1,10 +1,43 @@
 module Rack
-  module Icu4x
-    module Locale
+  module ICU4X
+    class Locale
       VERSION: String
+      ENV_KEY: String
 
       class Error < StandardError
       end
+
+      @app: _RackApp
+      @available_locales: Array[String]
+      @cookie_name: String?
+      @default_locale: String?
+      @negotiator: Negotiator
+
+      def initialize: (
+        _RackApp app,
+        available_locales: Array[String],
+        ?cookie: String?,
+        ?strategy: Symbol,
+        ?default_locale: String?
+      ) -> void
+      def call: (Hash[String, untyped] env) -> [Integer, Hash[String, String], _ToA[String]]
+
+      private
+
+      def detect_locales: (Hash[String, untyped] env) -> Array[ICU4X::Locale]
+      def cookie_locale: (Hash[String, untyped] env) -> Array[ICU4X::Locale]?
+      def accept_language_locales: (Hash[String, untyped] env) -> Array[ICU4X::Locale]
+      def parse_accept_language: (String header) -> Array[String]
+      def parse_entry: (String part) -> [String, Float]
+      def default_locales: () -> Array[ICU4X::Locale]
     end
   end
+end
+
+interface _RackApp
+  def call: (Hash[String, untyped] env) -> [Integer, Hash[String, String], _ToA[String]]
+end
+
+interface _ToA[T]
+  def to_a: () -> Array[T]
 end

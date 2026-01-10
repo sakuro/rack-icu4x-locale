@@ -26,6 +26,10 @@
 ## Gem should ignore Gemfile.lock
 /Gemfile.lock
 
+# Examples
+/examples/vendor/
+/examples/Gemfile.lock
+
 # MCP
 /.mcp.json
 ## Ignore serena stuff except project.yml
