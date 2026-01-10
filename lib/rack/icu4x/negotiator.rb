@@ -2,73 +2,25 @@
 
 module Rack
   module ICU4X
-    # Performs sophisticated language negotiation using ICU4X's maximize/minimize.
+    # Performs script-safe language negotiation using ICU4X's maximize.
     #
-    # Supports three strategies:
-    # - :filtering - Match as many available locales as possible in preference order
-    # - :matching  - Find the best match for each requested locale (unique results)
-    # - :lookup    - Find a single best locale (with required default)
+    # Matches requested locales against available locales, respecting script differences
+    # to avoid politically sensitive fallbacks (e.g., zh-TW won't match zh-CN).
     #
     # @example
-    #   negotiator = Rack::ICU4X::Negotiator.new(%w[en-US en-GB ja], strategy: :filtering)
+    #   negotiator = Rack::ICU4X::Negotiator.new(%w[en-US en-GB ja])
     #   negotiator.negotiate(%w[en-AU ja-JP])  # => ["en-US", "ja"]
     class Negotiator
-      STRATEGIES = %i[filtering matching lookup].freeze
-      public_constant :STRATEGIES
-
-      # @param available_locales [Array<String>] List of available locale identifiers
-      # @param strategy [Symbol] Negotiation strategy (:filtering, :matching, :lookup)
-      # @param default_locale [String, nil] Default locale for :lookup strategy
-      def initialize(available_locales, strategy: :filtering, default_locale: nil)
-        validate_strategy!(strategy)
-        validate_default_locale!(strategy, default_locale)
-
-        @strategy = strategy
-        @default_locale = default_locale
+      # @param available_locales [Array<String, ICU4X::Locale>] List of available locales
+      def initialize(available_locales)
         @available = build_available_index(available_locales)
       end
 
-      # Negotiate locales based on the configured strategy.
+      # Negotiate locales, returning all matches in preference order.
       #
       # @param requested_locales [Array<String>] Requested locale identifiers in preference order
       # @return [Array<String>] Matched locale identifiers
       def negotiate(requested_locales)
-        case @strategy
-        when :filtering then filter_matches(requested_locales)
-        when :matching then match_best(requested_locales)
-        when :lookup then lookup_single(requested_locales)
-        else raise ArgumentError, "Unknown strategy: #{@strategy}"
-        end
-      end
-
-      private def validate_strategy!(strategy)
-        return if STRATEGIES.include?(strategy)
-
-        raise ArgumentError, "Invalid strategy: #{strategy}. Must be one of: #{STRATEGIES.join(", ")}"
-      end
-
-      private def validate_default_locale!(strategy, default_locale)
-        return unless strategy == :lookup && default_locale.nil?
-
-        raise ArgumentError, "default_locale is required for :lookup strategy"
-      end
-
-      private def build_available_index(locales)
-        locales.map do |locale_or_str|
-          locale = locale_or_str.is_a?(::ICU4X::Locale) ? locale_or_str : ::ICU4X::Locale.parse(locale_or_str)
-          maximized = locale.maximize
-          {
-            original: locale.to_s,
-            locale:,
-            maximized:,
-            language: maximized.language,
-            script: maximized.script,
-            region: maximized.region
-          }
-        end
-      end
-
-      private def filter_matches(requested_locales)
         matched = []
         remaining = @available.dup
 
@@ -93,17 +45,19 @@ module Rack
         matched
       end
 
-      private def match_best(requested_locales)
-        requested_locales.filter_map {|req_str|
-          req_max = maximize_locale(req_str)
-          find_exact_match(@available, req_max)&.dig(:original) ||
-            find_lang_script_match(@available, req_max)&.dig(:original)
-        }.uniq
-      end
-
-      private def lookup_single(requested_locales)
-        result = match_best(requested_locales).first
-        result ? [result] : [@default_locale].compact
+      private def build_available_index(locales)
+        locales.map do |locale_or_str|
+          locale = locale_or_str.is_a?(::ICU4X::Locale) ? locale_or_str : ::ICU4X::Locale.parse(locale_or_str)
+          maximized = locale.maximize
+          {
+            original: locale.to_s,
+            locale:,
+            maximized:,
+            language: maximized.language,
+            script: maximized.script,
+            region: maximized.region
+          }
+        end
       end
 
       private def maximize_locale(locale_str) = ::ICU4X::Locale.parse(locale_str).maximize
