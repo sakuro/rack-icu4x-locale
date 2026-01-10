@@ -30,10 +30,11 @@ module Rack
       # @param default [String, ICU4X::Locale, nil] Default locale when no match is found (optional)
       def initialize(app, from:, cookie: nil, default: nil)
         @app = app
-        @from = from
+        @from = from.map {|l| normalize_locale(l) }
         @cookie_name = cookie
         @default = default && normalize_locale(default)
-        @negotiator = Negotiator.new(from)
+        validate_default_in_from!
+        @negotiator = Negotiator.new(@from)
       end
 
       # @param env [Hash] Rack environment
@@ -41,6 +42,12 @@ module Rack
       def call(env)
         env[ENV_KEY] = detect_locales(env)
         @app.call(env)
+      end
+      private def validate_default_in_from!
+        return unless @default
+        return if @from.include?(@default)
+
+        raise Error, "default #{@default.to_s.inspect} is not in available locales"
       end
 
       private def detect_locales(env)

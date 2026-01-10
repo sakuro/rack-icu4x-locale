@@ -10,7 +10,7 @@ module Rack
       type locale_input = String | ICU4X::Locale
 
       @app: _RackApp
-      @from: Array[locale_input]
+      @from: Array[ICU4X::Locale]
       @cookie_name: String?
       @default: ICU4X::Locale?
       @negotiator: Negotiator
@@ -25,6 +25,7 @@ module Rack
 
       private
 
+      def validate_default_in_from!: () -> void
       def detect_locales: (Hash[String, untyped] env) -> Array[ICU4X::Locale]
       def normalize_locale: (locale_input locale) -> ICU4X::Locale
       def cookie_locale: (Hash[String, untyped] env) -> Array[ICU4X::Locale]?

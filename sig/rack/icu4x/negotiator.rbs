@@ -1,8 +1,6 @@
 module Rack
   module ICU4X
     class Negotiator
-      type locale_input = String | ICU4X::Locale
-
       type available_entry = {
         original: String,
         locale: ICU4X::Locale,
@@ -14,13 +12,13 @@ module Rack
 
       @available: Array[available_entry]
 
-      def initialize: (Array[locale_input] available_locales) -> void
+      def initialize: (Array[ICU4X::Locale] available_locales) -> void
 
       def negotiate: (Array[String] requested_locales) -> Array[String]
 
       private
 
-      def build_available_index: (Array[locale_input] locales) -> Array[available_entry]
+      def build_available_index: (Array[ICU4X::Locale] locales) -> Array[available_entry]
       def maximize_locale: (String locale_str) -> ICU4X::Locale
       def find_exact_match: (Array[available_entry] candidates, ICU4X::Locale req_max) -> available_entry?
       def find_lang_script_match: (Array[available_entry] candidates, ICU4X::Locale req_max) -> available_entry?
