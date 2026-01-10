@@ -10,7 +10,7 @@ module Rack
   module ICU4X
     # Rack middleware that detects user's preferred locales from Accept-Language header and cookies.
     #
-    # Uses ICU4X's maximize/minimize for sophisticated language negotiation that respects
+    # Uses ICU4X's maximize for script-safe language negotiation that respects
     # script boundaries (e.g., zh-TW/Hant will NOT match zh-CN/Hans).
     #
     # @example Basic usage
@@ -18,12 +18,6 @@ module Rack
     #
     # @example With cookie support
     #   use Rack::ICU4X::Locale, available_locales: %w[en ja], cookie: "locale"
-    #
-    # @example With negotiation strategy
-    #   use Rack::ICU4X::Locale,
-    #     available_locales: %w[en-US en-GB ja],
-    #     strategy: :filtering,
-    #     default_locale: "en-US"
     class Locale
       ENV_KEY = "rack.icu4x.locale"
       public_constant :ENV_KEY
@@ -31,16 +25,13 @@ module Rack
       class Error < StandardError; end
 
       # @param app [#call] The Rack application
-      # @param available_locales [Array<String>] List of available locale identifiers
+      # @param available_locales [Array<String, ICU4X::Locale>] List of available locales
       # @param cookie [String, nil] Cookie name for locale preference (optional)
-      # @param strategy [Symbol] Negotiation strategy (:filtering, :matching, :lookup)
-      # @param default_locale [String, nil] Default locale (required for :lookup strategy)
-      def initialize(app, available_locales:, cookie: nil, strategy: :filtering, default_locale: nil)
+      def initialize(app, available_locales:, cookie: nil)
         @app = app
         @available_locales = available_locales
         @cookie_name = cookie
-        @default_locale = default_locale
-        @negotiator = Negotiator.new(available_locales, strategy:, default_locale:)
+        @negotiator = Negotiator.new(available_locales)
       end
 
       # @param env [Hash] Rack environment
@@ -51,8 +42,7 @@ module Rack
       end
 
       private def detect_locales(env)
-        locales = cookie_locale(env) || accept_language_locales(env)
-        locales.empty? ? default_locales : locales
+        cookie_locale(env) || accept_language_locales(env)
       end
 
       private def cookie_locale(env)
@@ -88,12 +78,6 @@ module Rack
       private def parse_entry(part)
         locale, quality = part.strip.split(";q=")
         [locale.strip, Float(quality || "1")]
-      end
-
-      private def default_locales
-        return [] if @default_locale.nil?
-
-        [::ICU4X::Locale.parse(@default_locale)]
       end
 
       loader = Zeitwerk::Loader.for_gem

@@ -3,7 +3,7 @@
 RSpec.describe Rack::ICU4X::Locale do
   let(:app) { ->(env) { [200, {}, [env[Rack::ICU4X::Locale::ENV_KEY].map(&:to_s).join(",")]] } }
   let(:available_locales) { %w[en ja de] }
-  let(:middleware) { Rack::ICU4X::Locale.new(app, available_locales:, default_locale: "en") }
+  let(:middleware) { Rack::ICU4X::Locale.new(app, available_locales:) }
 
   describe "#call" do
     context "with Accept-Language header" do
@@ -43,33 +43,18 @@ RSpec.describe Rack::ICU4X::Locale do
     end
 
     context "without Accept-Language header" do
-      it "returns default locale" do
+      it "returns empty array" do
         env = Rack::MockRequest.env_for("/")
 
         middleware.call(env)
 
         locales = env[Rack::ICU4X::Locale::ENV_KEY]
-        expect(locales.size).to eq(1)
-        expect(locales[0].to_s).to eq("en")
+        expect(locales).to eq([])
       end
     end
 
     context "when Accept-Language contains no available locales" do
-      it "returns default locale" do
-        env = Rack::MockRequest.env_for("/", "HTTP_ACCEPT_LANGUAGE" => "fr,es")
-
-        middleware.call(env)
-
-        locales = env[Rack::ICU4X::Locale::ENV_KEY]
-        expect(locales.size).to eq(1)
-        expect(locales[0].to_s).to eq("en")
-      end
-    end
-
-    context "without default_locale option" do
-      let(:middleware) { Rack::ICU4X::Locale.new(app, available_locales:) }
-
-      it "returns empty when no match" do
+      it "returns empty array" do
         env = Rack::MockRequest.env_for("/", "HTTP_ACCEPT_LANGUAGE" => "fr,es")
 
         middleware.call(env)
@@ -81,7 +66,7 @@ RSpec.describe Rack::ICU4X::Locale do
   end
 
   describe "with cookie option" do
-    let(:middleware) { Rack::ICU4X::Locale.new(app, available_locales:, cookie: "locale", default_locale: "en") }
+    let(:middleware) { Rack::ICU4X::Locale.new(app, available_locales:, cookie: "locale") }
 
     context "when cookie is set with valid locale" do
       it "returns the locale from cookie" do
@@ -162,12 +147,12 @@ RSpec.describe Rack::ICU4X::Locale do
     end
 
     context "with script-sensitive locales (Chinese)" do
-      let(:middleware) { Rack::ICU4X::Locale.new(app, available_locales: %w[zh-CN en], default_locale: "en") }
+      let(:middleware) { Rack::ICU4X::Locale.new(app, available_locales: %w[zh-CN en]) }
 
       it "does not match zh-TW to zh-CN (different scripts)" do
         env = Rack::MockRequest.env_for("/", "HTTP_ACCEPT_LANGUAGE" => "zh-TW")
         _, _, body = middleware.call(env)
-        expect(body.first).to eq("en")
+        expect(body.first).to eq("")
       end
 
       it "matches zh to zh-CN" do

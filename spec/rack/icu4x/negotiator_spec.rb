@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
 RSpec.describe Rack::ICU4X::Negotiator do
-  describe "#negotiate with :filtering strategy" do
+  describe "#negotiate" do
     context "with simple language codes" do
-      let(:negotiator) { Rack::ICU4X::Negotiator.new(%w[en ja], strategy: :filtering) }
+      let(:negotiator) { Rack::ICU4X::Negotiator.new(%w[en ja]) }
 
       it "matches exact language" do
         expect(negotiator.negotiate(%w[ja en])).to eq(%w[ja en])
@@ -23,7 +23,7 @@ RSpec.describe Rack::ICU4X::Negotiator do
     end
 
     context "with regional variants available" do
-      let(:negotiator) { Rack::ICU4X::Negotiator.new(%w[en-US en-GB ja], strategy: :filtering) }
+      let(:negotiator) { Rack::ICU4X::Negotiator.new(%w[en-US en-GB ja]) }
 
       it "matches exact regional variant" do
         expect(negotiator.negotiate(%w[en-GB])).to eq(%w[en-GB])
@@ -39,7 +39,7 @@ RSpec.describe Rack::ICU4X::Negotiator do
     end
 
     context "with script variants" do
-      let(:negotiator) { Rack::ICU4X::Negotiator.new(%w[zh-Hans zh-Hant], strategy: :filtering) }
+      let(:negotiator) { Rack::ICU4X::Negotiator.new(%w[zh-Hans zh-Hant]) }
 
       it "infers script from region (CN -> Hans)" do
         expect(negotiator.negotiate(%w[zh-CN])).to eq(%w[zh-Hans])
@@ -56,7 +56,7 @@ RSpec.describe Rack::ICU4X::Negotiator do
 
     context "with politically sensitive Chinese variants (CRITICAL)" do
       context "when only zh-CN (Simplified) is available" do
-        let(:negotiator) { Rack::ICU4X::Negotiator.new(%w[zh-CN], strategy: :filtering) }
+        let(:negotiator) { Rack::ICU4X::Negotiator.new(%w[zh-CN]) }
 
         it "does NOT match zh-TW (Taiwan) to zh-CN" do
           expect(negotiator.negotiate(%w[zh-TW])).to eq([])
@@ -80,7 +80,7 @@ RSpec.describe Rack::ICU4X::Negotiator do
       end
 
       context "when only zh-TW (Traditional) is available" do
-        let(:negotiator) { Rack::ICU4X::Negotiator.new(%w[zh-TW], strategy: :filtering) }
+        let(:negotiator) { Rack::ICU4X::Negotiator.new(%w[zh-TW]) }
 
         it "does NOT match zh-CN (PRC) to zh-TW" do
           expect(negotiator.negotiate(%w[zh-CN])).to eq([])
@@ -102,7 +102,7 @@ RSpec.describe Rack::ICU4X::Negotiator do
 
     context "with politically sensitive Serbian variants" do
       context "when only sr-Cyrl is available" do
-        let(:negotiator) { Rack::ICU4X::Negotiator.new(%w[sr-Cyrl], strategy: :filtering) }
+        let(:negotiator) { Rack::ICU4X::Negotiator.new(%w[sr-Cyrl]) }
 
         it "does NOT match sr-Latn to sr-Cyrl" do
           expect(negotiator.negotiate(%w[sr-Latn])).to eq([])
@@ -114,7 +114,7 @@ RSpec.describe Rack::ICU4X::Negotiator do
       end
 
       context "when only sr-Latn is available" do
-        let(:negotiator) { Rack::ICU4X::Negotiator.new(%w[sr-Latn], strategy: :filtering) }
+        let(:negotiator) { Rack::ICU4X::Negotiator.new(%w[sr-Latn]) }
 
         it "does NOT match sr-Cyrl to sr-Latn" do
           expect(negotiator.negotiate(%w[sr-Cyrl])).to eq([])
@@ -127,39 +127,10 @@ RSpec.describe Rack::ICU4X::Negotiator do
     end
   end
 
-  describe "#negotiate with :matching strategy" do
-    let(:negotiator) { Rack::ICU4X::Negotiator.new(%w[en ja], strategy: :matching) }
-
-    it "returns unique matches for each requested locale" do
-      expect(negotiator.negotiate(%w[en-US en-GB])).to eq(%w[en])
-    end
-  end
-
-  describe "#negotiate with :lookup strategy" do
-    context "with default locale" do
-      let(:negotiator) { Rack::ICU4X::Negotiator.new(%w[en ja], strategy: :lookup, default_locale: "en") }
-
-      it "returns single best match" do
-        expect(negotiator.negotiate(%w[ja-JP en-US])).to eq(%w[ja])
-      end
-
-      it "returns default when no match" do
-        expect(negotiator.negotiate(%w[zh-CN])).to eq(%w[en])
-      end
-    end
-
-    context "without default locale" do
-      it "raises ArgumentError" do
-        expect { Rack::ICU4X::Negotiator.new(%w[en ja], strategy: :lookup) }
-          .to raise_error(ArgumentError, /default_locale is required/)
-      end
-    end
-  end
-
   describe "available_locales with ICU4X::Locale instances" do
     context "with Locale instances only" do
       let(:locales) { [ICU4X::Locale.parse("en"), ICU4X::Locale.parse("ja")] }
-      let(:negotiator) { Rack::ICU4X::Negotiator.new(locales, strategy: :filtering) }
+      let(:negotiator) { Rack::ICU4X::Negotiator.new(locales) }
 
       it "accepts ICU4X::Locale instances" do
         expect(negotiator.negotiate(%w[ja])).to eq(%w[ja])
@@ -172,18 +143,11 @@ RSpec.describe Rack::ICU4X::Negotiator do
 
     context "with mixed String and Locale instances" do
       let(:locales) { ["en", ICU4X::Locale.parse("ja")] }
-      let(:negotiator) { Rack::ICU4X::Negotiator.new(locales, strategy: :filtering) }
+      let(:negotiator) { Rack::ICU4X::Negotiator.new(locales) }
 
       it "accepts mixed array" do
         expect(negotiator.negotiate(%w[ja en])).to eq(%w[ja en])
       end
-    end
-  end
-
-  describe "invalid strategy" do
-    it "raises ArgumentError for unknown strategy" do
-      expect { Rack::ICU4X::Negotiator.new(%w[en], strategy: :unknown) }
-        .to raise_error(ArgumentError, /Invalid strategy/)
     end
   end
 end

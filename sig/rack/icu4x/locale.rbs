@@ -12,15 +12,12 @@ module Rack
       @app: _RackApp
       @available_locales: Array[locale_input]
       @cookie_name: String?
-      @default_locale: String?
       @negotiator: Negotiator
 
       def initialize: (
         _RackApp app,
         available_locales: Array[locale_input],
-        ?cookie: String?,
-        ?strategy: Symbol,
-        ?default_locale: String?
+        ?cookie: String?
       ) -> void
       def call: (Hash[String, untyped] env) -> [Integer, Hash[String, String], _ToA[String]]
 
@@ -31,7 +28,6 @@ module Rack
       def accept_language_locales: (Hash[String, untyped] env) -> Array[ICU4X::Locale]
       def parse_accept_language: (String header) -> Array[String]
       def parse_entry: (String part) -> [String, Float]
-      def default_locales: () -> Array[ICU4X::Locale]
     end
   end
 end
