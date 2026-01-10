@@ -34,6 +34,6 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   spec.add_dependency "icu4x", "~> 0.8"
-  spec.add_dependency "rack", ">= 2.0"
+  spec.add_dependency "rack", "~> 3.0"
   spec.add_dependency "zeitwerk", "~> 2.7"
 end
