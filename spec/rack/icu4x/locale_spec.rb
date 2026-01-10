@@ -163,6 +163,46 @@ RSpec.describe Rack::ICU4X::Locale do
     end
   end
 
+  describe "with default option" do
+    context "when default is a String" do
+      let(:middleware) { Rack::ICU4X::Locale.new(app, available_locales:, default: "en") }
+
+      it "returns default locale when no match is found" do
+        env = Rack::MockRequest.env_for("/", "HTTP_ACCEPT_LANGUAGE" => "fr")
+
+        middleware.call(env)
+
+        locales = env[Rack::ICU4X::Locale::ENV_KEY]
+        expect(locales.size).to eq(1)
+        expect(locales[0].to_s).to eq("en")
+      end
+
+      it "returns matched locales instead of default when match exists" do
+        env = Rack::MockRequest.env_for("/", "HTTP_ACCEPT_LANGUAGE" => "ja")
+
+        middleware.call(env)
+
+        locales = env[Rack::ICU4X::Locale::ENV_KEY]
+        expect(locales.size).to eq(1)
+        expect(locales[0].to_s).to eq("ja")
+      end
+    end
+
+    context "when default is an ICU4X::Locale" do
+      let(:middleware) { Rack::ICU4X::Locale.new(app, available_locales:, default: ICU4X::Locale.parse("en")) }
+
+      it "returns default locale when no match is found" do
+        env = Rack::MockRequest.env_for("/")
+
+        middleware.call(env)
+
+        locales = env[Rack::ICU4X::Locale::ENV_KEY]
+        expect(locales.size).to eq(1)
+        expect(locales[0].to_s).to eq("en")
+      end
+    end
+  end
+
   describe "ENV_KEY" do
     it "is set to rack.icu4x.locale" do
       expect(Rack::ICU4X::Locale::ENV_KEY).to eq("rack.icu4x.locale")

@@ -27,10 +27,12 @@ module Rack
       # @param app [#call] The Rack application
       # @param available_locales [Array<String, ICU4X::Locale>] List of available locales
       # @param cookie [String, nil] Cookie name for locale preference (optional)
-      def initialize(app, available_locales:, cookie: nil)
+      # @param default [String, ICU4X::Locale, nil] Default locale when no match is found (optional)
+      def initialize(app, available_locales:, cookie: nil, default: nil)
         @app = app
         @available_locales = available_locales
         @cookie_name = cookie
+        @default = default && normalize_locale(default)
         @negotiator = Negotiator.new(available_locales)
       end
 
@@ -42,8 +44,11 @@ module Rack
       end
 
       private def detect_locales(env)
-        cookie_locale(env) || accept_language_locales(env)
+        result = cookie_locale(env) || accept_language_locales(env)
+        result.empty? && @default ? [@default] : result
       end
+
+      private def normalize_locale(locale) = locale.is_a?(::ICU4X::Locale) ? locale : ::ICU4X::Locale.parse(locale)
 
       private def cookie_locale(env)
         return nil unless @cookie_name

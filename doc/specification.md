@@ -17,7 +17,8 @@ Rack middleware that generates an array of ICU4X::Locale instances (in preferenc
 ```ruby
 use Rack::ICU4X::Locale,
   available_locales: %w[en-US en-GB ja],  # Required: available locales
-  cookie: "locale"                         # Optional: cookie name
+  cookie: "locale",                        # Optional: cookie name
+  default: "en"                            # Optional: fallback locale
 ```
 
 ### Options
@@ -26,6 +27,7 @@ use Rack::ICU4X::Locale,
 |--------|----------|---------|-------------|
 | `available_locales` | Yes | - | Array of available locale identifiers (String or ICU4X::Locale) |
 | `cookie` | No | nil | Cookie name for locale override |
+| `default` | No | nil | Fallback locale when no match is found (String or ICU4X::Locale) |
 
 ### Environment Key
 
@@ -36,7 +38,7 @@ use Rack::ICU4X::Locale,
 1. Cookie (when `cookie` option is set, user's explicit choice)
 2. Accept-Language header (sorted by quality value)
 
-If no match is found, an empty array is returned. Applications should handle this case with their own fallback logic.
+If no match is found and no `default` is set, an empty array is returned. Use the `default` option or handle empty results with application fallback logic.
 
 ## Language Negotiation
 
@@ -108,4 +110,4 @@ This avoids politically and culturally sensitive fallbacks.
 ## Notes
 
 - Cookie management is the application's responsibility (locale switching actions, etc.)
-- Applications should handle empty results with their own fallback logic
+- Use `default` option or handle empty results with application fallback logic
