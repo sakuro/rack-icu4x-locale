@@ -54,11 +54,11 @@ module Rack
       end
 
       private def build_available_index(locales)
-        locales.map do |locale_str|
-          locale = ::ICU4X::Locale.parse(locale_str)
+        locales.map do |locale_or_str|
+          locale = locale_or_str.is_a?(::ICU4X::Locale) ? locale_or_str : ::ICU4X::Locale.parse(locale_or_str)
           maximized = locale.maximize
           {
-            original: locale_str,
+            original: locale.to_s,
             locale:,
             maximized:,
             language: maximized.language,

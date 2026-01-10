@@ -156,6 +156,30 @@ RSpec.describe Rack::ICU4X::Negotiator do
     end
   end
 
+  describe "available_locales with ICU4X::Locale instances" do
+    context "with Locale instances only" do
+      let(:locales) { [ICU4X::Locale.parse("en"), ICU4X::Locale.parse("ja")] }
+      let(:negotiator) { Rack::ICU4X::Negotiator.new(locales, strategy: :filtering) }
+
+      it "accepts ICU4X::Locale instances" do
+        expect(negotiator.negotiate(%w[ja])).to eq(%w[ja])
+      end
+
+      it "matches region variant to base language" do
+        expect(negotiator.negotiate(%w[en-US])).to eq(%w[en])
+      end
+    end
+
+    context "with mixed String and Locale instances" do
+      let(:locales) { ["en", ICU4X::Locale.parse("ja")] }
+      let(:negotiator) { Rack::ICU4X::Negotiator.new(locales, strategy: :filtering) }
+
+      it "accepts mixed array" do
+        expect(negotiator.negotiate(%w[ja en])).to eq(%w[ja en])
+      end
+    end
+  end
+
   describe "invalid strategy" do
     it "raises ArgumentError for unknown strategy" do
       expect { Rack::ICU4X::Negotiator.new(%w[en], strategy: :unknown) }
