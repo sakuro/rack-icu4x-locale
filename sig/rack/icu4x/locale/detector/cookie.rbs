@@ -1,0 +1,22 @@
+module Rack
+  module ICU4X
+    class Locale
+      module Detector
+        class Cookie
+          include Base
+
+          DEFAULT_NAME: String
+
+          @name: String
+
+          def initialize: (?String name) -> void
+          def call: (Hash[String, untyped] env) -> String?
+
+          private
+
+          attr_reader name: String
+        end
+      end
+    end
+  end
+end

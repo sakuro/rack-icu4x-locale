@@ -2,6 +2,7 @@
 
 ### Added
 
-- Locale detection from Accept-Language header and cookies
+- Pluggable detector system for locale sources (#10)
+- Locale detection from query parameters, cookies, and Accept-Language header
 - Script-safe language negotiation using ICU4X's maximize
 - Sinatra demo application in `examples/`

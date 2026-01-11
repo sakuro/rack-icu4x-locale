@@ -1,0 +1,11 @@
+module Rack
+  module ICU4X
+    class Locale
+      module Detector
+        module Base
+          def call: (Hash[String, untyped] env) -> (String | Array[String] | nil)
+        end
+      end
+    end
+  end
+end

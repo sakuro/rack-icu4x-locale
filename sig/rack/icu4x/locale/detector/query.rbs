@@ -1,0 +1,22 @@
+module Rack
+  module ICU4X
+    class Locale
+      module Detector
+        class Query
+          include Base
+
+          DEFAULT_PARAM: String
+
+          @param: String
+
+          def initialize: (?String param) -> void
+          def call: (Hash[String, untyped] env) -> String?
+
+          private
+
+          attr_reader param: String
+        end
+      end
+    end
+  end
+end

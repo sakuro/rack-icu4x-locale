@@ -65,10 +65,10 @@ RSpec.describe Rack::ICU4X::Locale do
     end
   end
 
-  describe "with cookie option" do
-    let(:middleware) { Rack::ICU4X::Locale.new(app, from:, cookie: "locale") }
+  describe "with detectors option" do
+    context "with cookie detector" do
+      let(:middleware) { Rack::ICU4X::Locale.new(app, from:, detectors: [{cookie: "locale"}, :header]) }
 
-    context "when cookie is set with valid locale" do
       it "returns the locale from cookie" do
         env = Rack::MockRequest.env_for("/", "HTTP_COOKIE" => "locale=ja")
 
@@ -92,10 +92,8 @@ RSpec.describe Rack::ICU4X::Locale do
         expect(locales.size).to eq(1)
         expect(locales[0].to_s).to eq("de")
       end
-    end
 
-    context "when cookie is set with unavailable locale" do
-      it "falls back to Accept-Language" do
+      it "falls back to Accept-Language when cookie has unavailable locale" do
         env = Rack::MockRequest.env_for(
           "/",
           "HTTP_COOKIE" => "locale=fr",
@@ -108,10 +106,8 @@ RSpec.describe Rack::ICU4X::Locale do
         expect(locales.size).to eq(1)
         expect(locales[0].to_s).to eq("ja")
       end
-    end
 
-    context "when cookie is not set" do
-      it "falls back to Accept-Language" do
+      it "falls back to Accept-Language when cookie is not set" do
         env = Rack::MockRequest.env_for("/", "HTTP_ACCEPT_LANGUAGE" => "de")
 
         middleware.call(env)
@@ -120,6 +116,127 @@ RSpec.describe Rack::ICU4X::Locale do
         expect(locales.size).to eq(1)
         expect(locales[0].to_s).to eq("de")
       end
+    end
+
+    context "with query detector" do
+      let(:middleware) { Rack::ICU4X::Locale.new(app, from:, detectors: [{query: "lang"}, :header]) }
+
+      it "returns the locale from query parameter" do
+        env = Rack::MockRequest.env_for("/?lang=ja")
+
+        middleware.call(env)
+
+        locales = env[Rack::ICU4X::Locale::ENV_KEY]
+        expect(locales.size).to eq(1)
+        expect(locales[0].to_s).to eq("ja")
+      end
+
+      it "prefers query parameter over Accept-Language" do
+        env = Rack::MockRequest.env_for("/?lang=de", "HTTP_ACCEPT_LANGUAGE" => "ja")
+
+        middleware.call(env)
+
+        locales = env[Rack::ICU4X::Locale::ENV_KEY]
+        expect(locales.size).to eq(1)
+        expect(locales[0].to_s).to eq("de")
+      end
+    end
+
+    context "with priority order [query, cookie, header]" do
+      let(:middleware) do
+        Rack::ICU4X::Locale.new(
+          app,
+          from:,
+          detectors: [{query: "lang"}, {cookie: "locale"}, :header]
+        )
+      end
+
+      it "prefers query over cookie and header" do
+        env = Rack::MockRequest.env_for(
+          "/?lang=de",
+          "HTTP_COOKIE" => "locale=ja",
+          "HTTP_ACCEPT_LANGUAGE" => "en"
+        )
+
+        middleware.call(env)
+
+        locales = env[Rack::ICU4X::Locale::ENV_KEY]
+        expect(locales[0].to_s).to eq("de")
+      end
+
+      it "falls back to cookie when query is missing" do
+        env = Rack::MockRequest.env_for(
+          "/",
+          "HTTP_COOKIE" => "locale=ja",
+          "HTTP_ACCEPT_LANGUAGE" => "en"
+        )
+
+        middleware.call(env)
+
+        locales = env[Rack::ICU4X::Locale::ENV_KEY]
+        expect(locales[0].to_s).to eq("ja")
+      end
+
+      it "falls back to header when query and cookie are missing" do
+        env = Rack::MockRequest.env_for("/", "HTTP_ACCEPT_LANGUAGE" => "en")
+
+        middleware.call(env)
+
+        locales = env[Rack::ICU4X::Locale::ENV_KEY]
+        expect(locales[0].to_s).to eq("en")
+      end
+    end
+
+    context "with custom Proc detector" do
+      let(:middleware) do
+        Rack::ICU4X::Locale.new(
+          app,
+          from:,
+          detectors: [
+            ->(env) { env["custom.locale"] },
+            :header
+          ]
+        )
+      end
+
+      it "uses Proc detector result" do
+        env = Rack::MockRequest.env_for("/", "HTTP_ACCEPT_LANGUAGE" => "en")
+        env["custom.locale"] = "de"
+
+        middleware.call(env)
+
+        locales = env[Rack::ICU4X::Locale::ENV_KEY]
+        expect(locales[0].to_s).to eq("de")
+      end
+
+      it "falls back to header when Proc returns nil" do
+        env = Rack::MockRequest.env_for("/", "HTTP_ACCEPT_LANGUAGE" => "ja")
+        env["custom.locale"] = nil
+
+        middleware.call(env)
+
+        locales = env[Rack::ICU4X::Locale::ENV_KEY]
+        expect(locales[0].to_s).to eq("ja")
+      end
+    end
+
+    context "with empty detectors array" do
+      let(:middleware) { Rack::ICU4X::Locale.new(app, from:, detectors: []) }
+
+      it "defaults to header detector" do
+        env = Rack::MockRequest.env_for("/", "HTTP_ACCEPT_LANGUAGE" => "ja")
+
+        middleware.call(env)
+
+        locales = env[Rack::ICU4X::Locale::ENV_KEY]
+        expect(locales[0].to_s).to eq("ja")
+      end
+    end
+  end
+
+  describe "DEFAULT_DETECTORS" do
+    it "is set to [:header]" do
+      expect(Rack::ICU4X::Locale::DEFAULT_DETECTORS).to eq([:header])
     end
   end
 

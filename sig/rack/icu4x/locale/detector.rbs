@@ -1,0 +1,27 @@
+module Rack
+  module ICU4X
+    class Locale
+      module Detector
+        class InvalidSpecificationError < Error
+        end
+
+        INFLECTOR: Zeitwerk::Inflector
+
+        type detector_result = String | Array[String] | nil
+        type detector_spec = Symbol | Hash[Symbol, String] | ^(Hash[String, untyped]) -> detector_result | _Detector
+
+        def self.build: (detector_spec spec) -> _Detector
+
+        private
+
+        def self.build_from_symbol: (Symbol symbol) -> _Detector
+        def self.build_from_hash: (Hash[Symbol, String] hash) -> _Detector
+        def self.validate_callable!: (untyped obj) -> void
+      end
+    end
+  end
+end
+
+interface _Detector
+  def call: (Hash[String, untyped] env) -> (String | Array[String] | nil)
+end
