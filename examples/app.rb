@@ -15,8 +15,16 @@ class DemoApp < Sinatra::Base
     @accept_language = request.env["HTTP_ACCEPT_LANGUAGE"]
     @cookie_locale = request.cookies["locale"]
     @detected_locales = request.env[Rack::ICU4X::Locale::ENV_KEY]
+    @display_names = build_display_names(@detected_locales.first)
 
     erb :index
+  end
+
+  private def build_display_names(locale)
+    return {} unless locale
+
+    dn = ICU4X::DisplayNames.new(locale, type: :language)
+    AVAILABLE_LOCALES.to_h {|l| [l, dn.of(l)] }
   end
 
   post "/set_locale" do
@@ -80,7 +88,7 @@ __END__
     <td>
       <ol class="locale-list">
         <% @detected_locales.each do |locale| %>
-          <li><%= locale.to_s %></li>
+          <li><%= @display_names[locale.to_s] || locale.to_s %> (<%= locale.to_s %>)</li>
         <% end %>
       </ol>
     </td>
@@ -92,7 +100,7 @@ __END__
 <form action="/set_locale" method="post">
   <select name="locale">
     <% @available_locales.each do |locale| %>
-      <option value="<%= locale %>" <%= "selected" if @detected_locales.first&.to_s == locale %>><%= locale %></option>
+      <option value="<%= locale %>" <%= "selected" if @detected_locales.first&.to_s == locale %>><%= @display_names[locale] || locale %> (<%= locale %>)</option>
     <% end %>
   </select>
   <button type="submit">Set Locale (Cookie)</button>
