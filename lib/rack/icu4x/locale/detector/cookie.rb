@@ -34,9 +34,7 @@ module Rack
             locale
           end
 
-          private
-
-          attr_reader :name
+          private attr_reader :name
         end
       end
     end
