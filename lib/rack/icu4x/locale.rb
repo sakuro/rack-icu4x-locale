@@ -4,7 +4,6 @@ require "icu4x"
 require "rack"
 require "zeitwerk"
 require_relative "locale/version"
-require_relative "negotiator"
 
 module Rack
   module ICU4X
@@ -19,6 +18,12 @@ module Rack
     # @example With cookie support
     #   use Rack::ICU4X::Locale, from: %w[en ja], cookie: "locale"
     class Locale
+      Zeitwerk::Loader.new.tap do |loader|
+        loader.push_dir("#{__dir__}/locale", namespace: Rack::ICU4X::Locale)
+        loader.ignore("#{__dir__}/locale/version.rb")
+        loader.setup
+      end
+
       ENV_KEY = "rack.icu4x.locale"
       public_constant :ENV_KEY
 
@@ -43,6 +48,7 @@ module Rack
         env[ENV_KEY] = detect_locales(env)
         @app.call(env)
       end
+
       private def validate_default_in_from!
         return unless @default
         return if @from.include?(@default)
@@ -91,12 +97,6 @@ module Rack
         locale, quality = part.strip.split(";q=")
         [locale.strip, Float(quality || "1")]
       end
-
-      loader = Zeitwerk::Loader.for_gem
-      loader.inflector.inflect("icu4x" => "ICU4X")
-      loader.ignore("#{__dir__}/locale/version.rb")
-      loader.ignore("#{__dir__}/negotiator.rb")
-      loader.setup
     end
   end
 end
