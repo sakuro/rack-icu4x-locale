@@ -28,12 +28,7 @@ module Rack
           remaining = @available.dup
 
           requested_locales.each do |req_str|
-            begin
-              req_max = maximize_locale(req_str)
-            rescue
-              yield req_str if block_given?
-              next
-            end
+            req_max = maximize_locale(req_str)
 
             # 1. Exact match (language + script + region)
             if (found = find_exact_match(remaining, req_max))
@@ -48,6 +43,8 @@ module Rack
               matched << found[:original]
               remaining.delete(found)
             end
+          rescue
+            yield req_str if block_given?
           end
 
           matched
