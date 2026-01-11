@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+## [0.5.0] - 2026-01-11
+
 ### Added
 
 - Pluggable detector system for locale sources (#10)
