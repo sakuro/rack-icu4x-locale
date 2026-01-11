@@ -127,5 +127,21 @@ RSpec.describe Rack::ICU4X::Locale::Negotiator do
         end
       end
     end
+
+    context "with invalid locale strings" do
+      let(:negotiator) { Rack::ICU4X::Locale::Negotiator.new(parse_locales("en", "ja")) }
+
+      it "skips invalid locale and continues" do
+        expect(negotiator.negotiate(%w[invalid ja])).to eq(%w[ja])
+      end
+
+      it "returns empty when all locales are invalid" do
+        expect(negotiator.negotiate(%w[invalid also-invalid])).to eq([])
+      end
+
+      it "handles empty string gracefully" do
+        expect(negotiator.negotiate(["", "en"])).to eq(%w[en])
+      end
+    end
   end
 end

@@ -15,7 +15,7 @@ module Rack
 
         def initialize: (Array[ICU4X::Locale] available_locales) -> void
 
-        def negotiate: (Array[String] requested_locales) -> Array[String]
+        def negotiate: (Array[String] requested_locales) ?{ (String) -> void } -> Array[String]
 
         private
 

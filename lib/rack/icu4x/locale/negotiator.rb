@@ -21,6 +21,7 @@ module Rack
         # Negotiate locales, returning all matches in preference order.
         #
         # @param requested_locales [Array<String>] Requested locale identifiers in preference order
+        # @yield [String] Invalid locale string that could not be parsed
         # @return [Array<String>] Matched locale identifiers
         def negotiate(requested_locales)
           matched = []
@@ -42,6 +43,8 @@ module Rack
               matched << found[:original]
               remaining.delete(found)
             end
+          rescue
+            yield req_str if block_given?
           end
 
           matched

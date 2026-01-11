@@ -2,7 +2,7 @@
 
 ## Overview
 
-Rack middleware that generates an array of ICU4X::Locale instances (in preference order) from Accept-Language header and cookies. Provides script-safe language negotiation using ICU4X's `maximize` method.
+Rack middleware that generates an array of ICU4X::Locale instances (in preference order) from various sources (query parameters, cookies, Accept-Language header). Provides script-safe language negotiation using ICU4X's `maximize` method.
 
 ## Dependencies
 
@@ -16,9 +16,9 @@ Rack middleware that generates an array of ICU4X::Locale instances (in preferenc
 
 ```ruby
 use Rack::ICU4X::Locale,
-  from: %w[en-US en-GB ja],  # Required: available locales
-  cookie: "locale",          # Optional: cookie name
-  default: "en"              # Optional: fallback locale
+  from: %w[en-US en-GB ja],                              # Required: available locales
+  detectors: [{query: "lang"}, {cookie: "locale"}, :header],  # Optional: detection sources
+  default: "en"                                          # Optional: fallback locale
 ```
 
 ### Options
@@ -26,19 +26,49 @@ use Rack::ICU4X::Locale,
 | Option | Required | Default | Description |
 |--------|----------|---------|-------------|
 | `from` | Yes | - | Array of available locale identifiers (String or ICU4X::Locale) |
-| `cookie` | No | nil | Cookie name for locale override |
+| `detectors` | No | `[:header]` | Array of detector specifications (see below) |
 | `default` | No | nil | Fallback locale when no match is found (String or ICU4X::Locale) |
+
+### Detector Specifications
+
+Detectors are tried in order. The first detector that returns a locale matching an available locale wins.
+
+| Format | Example | Description |
+|--------|---------|-------------|
+| Symbol | `:header` | Accept-Language header detector |
+| Symbol | `:cookie` | Cookie detector (default name: `"locale"`) |
+| Symbol | `:query` | Query detector (default param: `"locale"`) |
+| Hash | `{cookie: "user_locale"}` | Cookie detector with custom cookie name |
+| Hash | `{query: "lang"}` | Query detector with custom parameter name |
+| Proc | `->(env) { env["rack.session"]&.[]("locale") }` | Custom detection logic |
+| Callable | Any object responding to `#call(env)` | Custom detector object |
+
+### Built-in Detectors
+
+| Class | Symbol | Default Argument | Description |
+|-------|--------|------------------|-------------|
+| `Detector::Header` | `:header` | - | Accept-Language header |
+| `Detector::Cookie` | `:cookie` | `"locale"` | Cookie value |
+| `Detector::Query` | `:query` | `"locale"` | Query string parameter |
+
+### Detector Return Values
+
+All detectors must return one of:
+- `String` - Single locale (e.g., `"ja"`)
+- `Array<String>` - Multiple locales in preference order (e.g., `["ja", "en"]`)
+- `nil` - No locale detected (try next detector)
 
 ### Environment Key
 
 `rack.icu4x.locale` - Array of `ICU4X::Locale` instances in preference order
 
-## Locale Detection Priority
+## Locale Detection Flow
 
-1. Cookie (when `cookie` option is set, user's explicit choice)
-2. Accept-Language header (sorted by quality value)
-
-If no match is found and no `default` is set, an empty array is returned. Use the `default` option or handle empty results with application fallback logic.
+1. Iterate through detectors in order
+2. For each detector, get candidate locale(s)
+3. Negotiate candidates against available locales
+4. Return first successful match
+5. If no match found, return `[default]` if set, otherwise `[]`
 
 ## Language Negotiation
 
@@ -100,6 +130,18 @@ This avoids politically and culturally sensitive fallbacks.
 - Sorted by quality value (descending)
 - Preserves full locale string (does not extract language part only)
 
+## Error Handling
+
+### Invalid Locale Strings
+
+When a locale string cannot be parsed (e.g., typos, malformed values):
+
+- The invalid locale is skipped
+- A warning is logged to `rack.logger` (if available) or `rack.errors`
+- Processing continues with remaining locales
+
+Example: `Accept-Language: invlaid, ja` → `ja` is matched, `invlaid` is logged and skipped.
+
 ## References
 
 - [icu4x gem](https://rubygems.org/gems/icu4x)
@@ -109,5 +151,5 @@ This avoids politically and culturally sensitive fallbacks.
 
 ## Notes
 
-- Cookie management is the application's responsibility (locale switching actions, etc.)
+- Cookie/session management is the application's responsibility (locale switching actions, etc.)
 - Use `default` option or handle empty results with application fallback logic

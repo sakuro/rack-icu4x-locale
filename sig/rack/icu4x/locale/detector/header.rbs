@@ -1,0 +1,17 @@
+module Rack
+  module ICU4X
+    class Locale
+      module Detector
+        class Header
+          def initialize: () -> void
+          def call: (Hash[String, untyped] env) -> Array[String]?
+
+          private
+
+          def parse_accept_language: (String header) -> Array[String]
+          def parse_entry: (String part) -> [String, Float]
+        end
+      end
+    end
+  end
+end
