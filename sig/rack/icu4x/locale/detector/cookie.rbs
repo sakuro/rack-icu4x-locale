@@ -3,8 +3,6 @@ module Rack
     class Locale
       module Detector
         class Cookie
-          include Base
-
           DEFAULT_NAME: String
 
           @name: String

@@ -47,11 +47,11 @@ module Rack
         private_class_method def self.build_from_hash(hash)
           raise InvalidSpecificationError, "Hash must have exactly one key" unless hash.size == 1
 
-          key, value = hash.first
-          class_name = INFLECTOR.camelize(key.to_s, nil)
-          const_get(class_name).new(value)
+          type, arg = hash.first
+          class_name = INFLECTOR.camelize(type.to_s, nil)
+          const_get(class_name).new(arg)
         rescue NameError
-          raise InvalidSpecificationError, "Unknown detector type: #{key.inspect}"
+          raise InvalidSpecificationError, "Unknown detector type: #{type.inspect}"
         end
 
         private_class_method def self.validate_callable!(obj)

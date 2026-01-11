@@ -16,8 +16,6 @@ module Rack
         #   env = { "HTTP_COOKIE" => "user_locale=en" }
         #   detector.call(env) # => "en"
         class Cookie
-          include Base
-
           DEFAULT_NAME = "locale"
           private_constant :DEFAULT_NAME
 

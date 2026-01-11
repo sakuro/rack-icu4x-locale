@@ -16,8 +16,6 @@ module Rack
         #   env = Rack::MockRequest.env_for("/?lang=en")
         #   detector.call(env) # => "en"
         class Query
-          include Base
-
           DEFAULT_PARAM = "locale"
           private_constant :DEFAULT_PARAM
 

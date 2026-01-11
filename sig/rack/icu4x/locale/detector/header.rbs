@@ -3,8 +3,6 @@ module Rack
     class Locale
       module Detector
         class Header
-          include Base
-
           def initialize: () -> void
           def call: (Hash[String, untyped] env) -> Array[String]?
 

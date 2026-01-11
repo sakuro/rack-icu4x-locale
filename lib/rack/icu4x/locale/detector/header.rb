@@ -13,8 +13,6 @@ module Rack
         #   env = { "HTTP_ACCEPT_LANGUAGE" => "ja,en;q=0.9,de;q=0.8" }
         #   detector.call(env) # => ["ja", "en", "de"]
         class Header
-          include Base
-
           # @param env [Hash] Rack environment
           # @return [Array<String>, nil] Locales sorted by quality value, or nil if header is missing
           def call(env)
