@@ -13,16 +13,16 @@ module Rack
     # script boundaries (e.g., zh-TW/Hant will NOT match zh-CN/Hans).
     #
     # @example Basic usage (Accept-Language header only)
-    #   use Rack::ICU4X::Locale, from: %w[en ja]
+    #   use Rack::ICU4X::Locale, locales: %w[en ja]
     #
     # @example With multiple detectors
     #   use Rack::ICU4X::Locale,
-    #     from: %w[en ja],
+    #     locales: %w[en ja],
     #     detectors: [{ query: "lang" }, { cookie: "locale" }, :header]
     #
     # @example With custom detector
     #   use Rack::ICU4X::Locale,
-    #     from: %w[en ja],
+    #     locales: %w[en ja],
     #     detectors: [->(env) { env["rack.session"]&.[]("locale") }, :header]
     class Locale
       Zeitwerk::Loader.new.tap do |loader|
@@ -40,16 +40,16 @@ module Rack
       class Error < StandardError; end
 
       # @param app [#call] The Rack application
-      # @param from [Array<String, ICU4X::Locale>] List of available locales
+      # @param locales [Array<String, ICU4X::Locale>] List of available locales
       # @param detectors [Array] Detector specifications (optional, default: [:header])
       # @param default [String, ICU4X::Locale, nil] Default locale when no match is found (optional)
-      def initialize(app, from:, detectors: DEFAULT_DETECTORS, default: nil)
+      def initialize(app, locales:, detectors: DEFAULT_DETECTORS, default: nil)
         @app = app
-        @from = from.map {|locale| normalize_locale(locale) }
+        @locales = locales.map {|locale| normalize_locale(locale) }
         @detectors = build_detectors(detectors)
         @default = default && normalize_locale(default)
-        validate_default_in_from!
-        @negotiator = Negotiator.new(@from)
+        validate_default_in_locales!
+        @negotiator = Negotiator.new(@locales)
       end
 
       # @param env [Hash] Rack environment
@@ -59,9 +59,9 @@ module Rack
         @app.call(env)
       end
 
-      private def validate_default_in_from!
+      private def validate_default_in_locales!
         return unless @default
-        return if @from.include?(@default)
+        return if @locales.include?(@default)
 
         raise Error, "default #{@default.to_s.inspect} is not in available locales"
       end

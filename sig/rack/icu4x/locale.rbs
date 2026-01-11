@@ -11,14 +11,14 @@ module Rack
       type locale_input = String | ICU4X::Locale
 
       @app: _RackApp
-      @from: Array[ICU4X::Locale]
+      @locales: Array[ICU4X::Locale]
       @detectors: Array[_Detector]
       @default: ICU4X::Locale?
       @negotiator: Negotiator
 
       def initialize: (
         _RackApp app,
-        from: Array[locale_input],
+        locales: Array[locale_input],
         ?detectors: Array[Detector::detector_spec],
         ?default: locale_input?
       ) -> void
@@ -26,7 +26,7 @@ module Rack
 
       private
 
-      def validate_default_in_from!: () -> void
+      def validate_default_in_locales!: () -> void
       def build_detectors: (Array[Detector::detector_spec] specs) -> Array[_Detector]
       def detect_locales: (Hash[String, untyped] env) -> Array[ICU4X::Locale]
       def try_detectors: (Hash[String, untyped] env) -> Array[ICU4X::Locale]

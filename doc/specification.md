@@ -16,7 +16,7 @@ Rack middleware that generates an array of ICU4X::Locale instances (in preferenc
 
 ```ruby
 use Rack::ICU4X::Locale,
-  from: %w[en-US en-GB ja],                              # Required: available locales
+  locales: %w[en-US en-GB ja],                           # Required: available locales
   detectors: [{query: "lang"}, {cookie: "locale"}, :header],  # Optional: detection sources
   default: "en"                                          # Optional: fallback locale
 ```
@@ -25,7 +25,7 @@ use Rack::ICU4X::Locale,
 
 | Option | Required | Default | Description |
 |--------|----------|---------|-------------|
-| `from` | Yes | - | Array of available locale identifiers (String or ICU4X::Locale) |
+| `locales` | Yes | - | Array of available locale identifiers (String or ICU4X::Locale) |
 | `detectors` | No | `[:header]` | Array of detector specifications (see below) |
 | `default` | No | nil | Fallback locale when no match is found (String or ICU4X::Locale) |
 

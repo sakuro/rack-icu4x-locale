@@ -18,7 +18,7 @@ gem 'rack-icu4x-locale'
 ### Basic (Accept-Language header only)
 
 ```ruby
-use Rack::ICU4X::Locale, from: %w[en ja de fr]
+use Rack::ICU4X::Locale, locales: %w[en ja de fr]
 
 run ->(env) {
   locales = env["rack.icu4x.locale"]
@@ -30,7 +30,7 @@ run ->(env) {
 
 ```ruby
 use Rack::ICU4X::Locale,
-  from: %w[en ja de fr],
+  locales: %w[en ja de fr],
   detectors: [
     {query: "lang"},      # ?lang=ja
     {cookie: "locale"},   # Cookie: locale=ja
@@ -43,7 +43,7 @@ use Rack::ICU4X::Locale,
 
 ```ruby
 use Rack::ICU4X::Locale,
-  from: %w[en ja de fr],
+  locales: %w[en ja de fr],
   detectors: [
     ->(env) { env["rack.session"]&.[]("locale") },
     :header
