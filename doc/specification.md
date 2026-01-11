@@ -130,6 +130,18 @@ This avoids politically and culturally sensitive fallbacks.
 - Sorted by quality value (descending)
 - Preserves full locale string (does not extract language part only)
 
+## Error Handling
+
+### Invalid Locale Strings
+
+When a locale string cannot be parsed (e.g., typos, malformed values):
+
+- The invalid locale is skipped
+- A warning is logged to `rack.logger` (if available) or `rack.errors`
+- Processing continues with remaining locales
+
+Example: `Accept-Language: invlaid, ja` → `ja` is matched, `invlaid` is logged and skipped.
+
 ## References
 
 - [icu4x gem](https://rubygems.org/gems/icu4x)
