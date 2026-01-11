@@ -36,8 +36,10 @@ Detectors are tried in order. The first detector that returns a locale matching 
 | Format | Example | Description |
 |--------|---------|-------------|
 | Symbol | `:header` | Accept-Language header detector |
-| Hash | `{cookie: "locale"}` | Cookie detector with custom cookie name |
-| Hash | `{query: "lang"}` | Query string detector with custom parameter name |
+| Symbol | `:cookie` | Cookie detector (default name: `"locale"`) |
+| Symbol | `:query` | Query detector (default param: `"locale"`) |
+| Hash | `{cookie: "user_locale"}` | Cookie detector with custom cookie name |
+| Hash | `{query: "lang"}` | Query detector with custom parameter name |
 | Proc | `->(env) { env["rack.session"]&.[]("locale") }` | Custom detection logic |
 | Callable | Any object responding to `#call(env)` | Custom detector object |
 
