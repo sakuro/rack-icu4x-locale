@@ -39,7 +39,3 @@ end
 interface _RackApp
   def call: (Hash[String, untyped] env) -> [Integer, Hash[String, String], _ToA[String]]
 end
-
-interface _ToA[T]
-  def to_a: () -> Array[T]
-end
