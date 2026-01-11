@@ -9,7 +9,7 @@ module Rack
       # to avoid politically sensitive fallbacks (e.g., zh-TW won't match zh-CN).
       #
       # @example
-      #   locales = %w[en-US en-GB ja].map { ICU4X::Locale.parse(_1) }
+      #   locales = %w[en-US en-GB ja].map { |s| ICU4X::Locale.parse(s) }
       #   negotiator = Rack::ICU4X::Locale::Negotiator.new(locales)
       #   negotiator.negotiate(%w[en-AU ja-JP])  # => ["en-US", "ja"]
       class Negotiator
