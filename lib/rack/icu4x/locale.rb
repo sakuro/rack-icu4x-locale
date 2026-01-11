@@ -82,13 +82,24 @@ module Rack
           next if raw.nil?
 
           requested = Array(raw)
-          matched = @negotiator.negotiate(requested)
+          matched = @negotiator.negotiate(requested) {|invalid_locale|
+            log_invalid_locale(env, invalid_locale)
+          }
           return matched.map {|locale| ::ICU4X::Locale.parse(locale) } unless matched.empty?
         end
         []
       end
 
       private def normalize_locale(locale) = locale.is_a?(::ICU4X::Locale) ? locale : ::ICU4X::Locale.parse(locale)
+
+      private def log_invalid_locale(env, locale)
+        message = "Ignored invalid locale: #{locale}"
+        if env["rack.logger"]
+          env["rack.logger"].warn(message)
+        else
+          env["rack.errors"]&.puts(message)
+        end
+      end
     end
   end
 end

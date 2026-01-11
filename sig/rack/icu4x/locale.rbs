@@ -31,6 +31,7 @@ module Rack
       def detect_locales: (Hash[String, untyped] env) -> Array[ICU4X::Locale]
       def try_detectors: (Hash[String, untyped] env) -> Array[ICU4X::Locale]
       def normalize_locale: (locale_input locale) -> ICU4X::Locale
+      def log_invalid_locale: (Hash[String, untyped] env, String locale) -> void
     end
   end
 end

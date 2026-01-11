@@ -339,4 +339,41 @@ RSpec.describe Rack::ICU4X::Locale do
       expect(Rack::ICU4X::Locale::VERSION).to match(/\A\d+\.\d+\.\d+/)
     end
   end
+
+  describe "invalid locale logging" do
+    let(:middleware) { Rack::ICU4X::Locale.new(app, from:) }
+    let(:errors) { StringIO.new }
+    let(:logger) { double(warn: nil) }
+
+    context "with rack.logger" do
+      it "logs invalid locale to rack.logger with warn level" do
+        env = Rack::MockRequest.env_for("/", "HTTP_ACCEPT_LANGUAGE" => "invalid, ja")
+        env["rack.logger"] = logger
+
+        middleware.call(env)
+
+        expect(logger).to have_received(:warn).with("Ignored invalid locale: invalid")
+      end
+    end
+
+    context "without rack.logger" do
+      it "logs invalid locale to rack.errors" do
+        env = Rack::MockRequest.env_for("/", "HTTP_ACCEPT_LANGUAGE" => "invalid, ja")
+        env["rack.errors"] = errors
+
+        middleware.call(env)
+
+        expect(errors.string).to include("Ignored invalid locale: invalid")
+      end
+    end
+
+    it "does not log valid locales" do
+      env = Rack::MockRequest.env_for("/", "HTTP_ACCEPT_LANGUAGE" => "ja, en")
+      env["rack.errors"] = errors
+
+      middleware.call(env)
+
+      expect(errors.string).to be_empty
+    end
+  end
 end

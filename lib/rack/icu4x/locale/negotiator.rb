@@ -21,6 +21,7 @@ module Rack
         # Negotiate locales, returning all matches in preference order.
         #
         # @param requested_locales [Array<String>] Requested locale identifiers in preference order
+        # @yield [String] Invalid locale string that could not be parsed
         # @return [Array<String>] Matched locale identifiers
         def negotiate(requested_locales)
           matched = []
@@ -28,6 +29,10 @@ module Rack
 
           requested_locales.each do |req_str|
             req_max = maximize_locale(req_str)
+            if req_max.nil?
+              yield req_str if block_given?
+              next
+            end
 
             # 1. Exact match (language + script + region)
             if (found = find_exact_match(remaining, req_max))
@@ -61,7 +66,11 @@ module Rack
           end
         end
 
-        private def maximize_locale(locale_str) = ::ICU4X::Locale.parse(locale_str).maximize
+        private def maximize_locale(locale_str)
+          ::ICU4X::Locale.parse(locale_str).maximize
+        rescue RuntimeError
+          nil
+        end
 
         private def find_exact_match(candidates, req_max)
           candidates.find do |entry|
