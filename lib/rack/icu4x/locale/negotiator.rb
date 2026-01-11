@@ -28,8 +28,9 @@ module Rack
           remaining = @available.dup
 
           requested_locales.each do |req_str|
-            req_max = maximize_locale(req_str)
-            if req_max.nil?
+            begin
+              req_max = maximize_locale(req_str)
+            rescue
               yield req_str if block_given?
               next
             end
@@ -66,11 +67,7 @@ module Rack
           end
         end
 
-        private def maximize_locale(locale_str)
-          ::ICU4X::Locale.parse(locale_str).maximize
-        rescue RuntimeError
-          nil
-        end
+        private def maximize_locale(locale_str) = ::ICU4X::Locale.parse(locale_str).maximize
 
         private def find_exact_match(candidates, req_max)
           candidates.find do |entry|

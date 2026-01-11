@@ -20,7 +20,7 @@ module Rack
         private
 
         def build_available_index: (Array[ICU4X::Locale] locales) -> Array[available_entry]
-        def maximize_locale: (String locale_str) -> ICU4X::Locale?
+        def maximize_locale: (String locale_str) -> ICU4X::Locale
         def find_exact_match: (Array[available_entry] candidates, ICU4X::Locale req_max) -> available_entry?
         def find_lang_script_match: (Array[available_entry] candidates, ICU4X::Locale req_max) -> available_entry?
       end
