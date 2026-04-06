@@ -8,7 +8,7 @@ AllCops:
     - examples/vendor/**/*
   ExtraDetails: true
   NewCops: enable
-  TargetRubyVersion: 3.2
+  TargetRubyVersion: 3.3
   UseCache: true
 
 inherit_mode:
