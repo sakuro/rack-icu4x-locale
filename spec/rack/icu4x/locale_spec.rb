@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 RSpec.describe Rack::ICU4X::Locale do
-  let(:app) { ->(env) { [200, {}, [env[Rack::ICU4X::Locale::ENV_KEY].map(&:to_s).join(",")]] } }
+  let(:app) { ->(env) { [200, {}, [env[Rack::ICU4X::Locale::ENV_KEY].join(",")]] } }
   let(:locales) { %w[en ja de] }
   let(:middleware) { Rack::ICU4X::Locale.new(app, locales:) }
 
