@@ -3,7 +3,7 @@
 module Rack
   module ICU4X
     class Locale
-      VERSION = "0.5.0"
+      VERSION = "0.6.0"
       public_constant :VERSION
     end
   end
