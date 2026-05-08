@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+## [0.6.0] - 2026-05-08
+
 ### Changed
 
 - Raise minimum Ruby version requirement to 3.3
