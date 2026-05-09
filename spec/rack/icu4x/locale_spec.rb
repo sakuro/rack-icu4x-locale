@@ -79,7 +79,7 @@ RSpec.describe Rack::ICU4X::Locale do
         expect(locales[0].to_s).to eq("ja")
       end
 
-      it "ignores Accept-Language header when cookie is set" do
+      it "puts cookie locale first, then Accept-Language locales" do
         env = Rack::MockRequest.env_for(
           "/",
           "HTTP_COOKIE" => "locale=de",
@@ -89,8 +89,10 @@ RSpec.describe Rack::ICU4X::Locale do
         middleware.call(env)
 
         locales = env[Rack::ICU4X::Locale::ENV_KEY]
-        expect(locales.size).to eq(1)
+        expect(locales.size).to eq(3)
         expect(locales[0].to_s).to eq("de")
+        expect(locales[1].to_s).to eq("ja")
+        expect(locales[2].to_s).to eq("en")
       end
 
       it "falls back to Accept-Language when cookie has unavailable locale" do
@@ -131,14 +133,15 @@ RSpec.describe Rack::ICU4X::Locale do
         expect(locales[0].to_s).to eq("ja")
       end
 
-      it "prefers query parameter over Accept-Language" do
+      it "puts query locale first, then Accept-Language locales" do
         env = Rack::MockRequest.env_for("/?lang=de", "HTTP_ACCEPT_LANGUAGE" => "ja")
 
         middleware.call(env)
 
         locales = env[Rack::ICU4X::Locale::ENV_KEY]
-        expect(locales.size).to eq(1)
+        expect(locales.size).to eq(2)
         expect(locales[0].to_s).to eq("de")
+        expect(locales[1].to_s).to eq("ja")
       end
     end
 
@@ -184,6 +187,32 @@ RSpec.describe Rack::ICU4X::Locale do
 
         locales = env[Rack::ICU4X::Locale::ENV_KEY]
         expect(locales[0].to_s).to eq("en")
+      end
+
+      it "collects matches from all detectors in priority order" do
+        env = Rack::MockRequest.env_for(
+          "/?lang=de",
+          "HTTP_COOKIE" => "locale=ja",
+          "HTTP_ACCEPT_LANGUAGE" => "en"
+        )
+
+        middleware.call(env)
+
+        locales = env[Rack::ICU4X::Locale::ENV_KEY]
+        expect(locales.map(&:to_s)).to eq(%w[de ja en])
+      end
+
+      it "deduplicates locales across detectors" do
+        env = Rack::MockRequest.env_for(
+          "/?lang=ja",
+          "HTTP_COOKIE" => "locale=ja",
+          "HTTP_ACCEPT_LANGUAGE" => "ja,en;q=0.9"
+        )
+
+        middleware.call(env)
+
+        locales = env[Rack::ICU4X::Locale::ENV_KEY]
+        expect(locales.map(&:to_s)).to eq(%w[ja en])
       end
     end
 
