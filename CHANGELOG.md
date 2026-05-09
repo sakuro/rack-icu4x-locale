@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+## [0.7.0] - 2026-05-09
+
 ### Changed
 
 - Collect matches from all detectors instead of stopping at first match (#16)
