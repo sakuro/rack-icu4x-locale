@@ -77,6 +77,7 @@ module Rack
       end
 
       private def try_detectors(env)
+        result = []
         @detectors.each do |detector|
           raw = detector.call(env)
           next if raw.nil?
@@ -85,9 +86,9 @@ module Rack
           matched = @negotiator.negotiate(requested) {|invalid_locale|
             log_invalid_locale(env, invalid_locale)
           }
-          return matched.map {|locale| ::ICU4X::Locale.parse(locale) } unless matched.empty?
+          result.concat(matched)
         end
-        []
+        result.uniq.map! {|locale| ::ICU4X::Locale.parse(locale) }
       end
 
       private def normalize_locale(locale) = locale.is_a?(::ICU4X::Locale) ? locale : ::ICU4X::Locale.parse(locale)
